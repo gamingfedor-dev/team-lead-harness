@@ -16,6 +16,40 @@ I built this over four months. Three production codebases: React, Angular, and a
 
 > **Deployment in action.** This clip shows the wizard itself running on the same test project — paste `WIZARD.md` into Claude Code, answer the questions one at a time, end up with `CLAUDE.md`, `.claude/commands/`, `.claude/agents/`, `.claude/hooks/`, and a stack-aware `settings.local.json`. The segment covers Q4.2–Q4.5 (persona delivery format, placeholder fill, subagent metadata), then the Module D hooks, then the Q7 wrap-up. 2x speed.
 
+---
+
+## What is this for
+
+Claude Code is a fast feature shipper out of the box. It also gets out of hand fast. A first-week plan drifts from the code three weeks later. A merge request the model approved misses a race condition a human would have flagged. A multi-agent run burns ten times the tokens of a single call. A decision you made last quarter has to be re-derived because nobody wrote it down.
+
+I built this to solve those problems, not the toy version of them.
+
+**Use this if you are:**
+
+- A solo operator running one or more codebases and want a senior-engineering team's worth of perspectives applied to your work without hiring one.
+- A tech lead who needs every change reviewed adversarially before it ships, but cannot afford the round-trip of a human gate every time.
+- A founder shipping AI-assisted code who wants the workflow itself to leave an audit trail — what was changed, why, what alternatives were considered, what was rejected and by whom.
+- An engineer working across stacks (React + Angular + C++ + Python is what I had) and tired of treating each one as its own context-island. The kit treats stack as a constraint, not an identity.
+
+**Use this if your problem is:**
+
+- "I lose track of decisions I made last month."
+- "I have a hot path I am scared to refactor without a second opinion."
+- "My agents run away with token budget on tasks that did not need them."
+- "I want the same review discipline I would apply at a real company, but I am working alone."
+- "My plans drift from the code and I do not notice until production."
+
+**Do not use this if:**
+
+- You are evaluating Claude Code for the first time and have not yet shipped anything with it. Get comfortable with the bare CLI first. Then add this.
+- You only want a faster autocomplete. Use Copilot or Cursor. This kit is for orchestration, not completion.
+- Your project is a one-week throwaway. The setup cost is real (5–40 min depending on modules), and it pays back over months.
+- You are uncomfortable maintaining markdown notes in a separate Obsidian vault. Layer 5 of the self-correction architecture starves without that habit.
+
+This is a tool for engineering at scale with one human in the loop. Not a magic productivity multiplier. Operator judgment is still the most important component.
+
+---
+
 ```
 operator (you)  →  12 named personas  →  orchestrator
        │                  │                    │
