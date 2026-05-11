@@ -118,11 +118,13 @@ The vault is a separate Obsidian folder that lives **outside your code repo**. I
 > Prerequisites: Module B (CLAUDE.md must exist so the routing table can reference personas).
 
 - [ ] **Q4.1** Which starter personas? Pick a tier (templates live in `templates/personas/`):
-  - `minimum` — implementer + reviewer + investigator (3 personas)
-  - `productive` — minimum + mentor + pragmatist (5)
-  - `extended` — productive + orchestrator + vault + weekly (7)
-  - `full` — all 12 personas (implementer, investigator, reviewer, safety, performance, crash, mentor, pragmatist, orchestrator, vault, weekly, domain-skill)
+  - `minimum` — exactly these 3: implementer, reviewer, investigator
+  - `productive` — exactly these 5: minimum + mentor + pragmatist
+  - `extended` — exactly these 7: productive + orchestrator + vault + weekly
+  - `full` — all 12: implementer, investigator, reviewer, safety, performance, crash, mentor, pragmatist, orchestrator, vault, weekly, domain-skill
   - `custom` — list specific names from `templates/personas/` ([`kit/02-skill-catalog.md`](kit/02-skill-catalog.md) explains the pattern)
+
+  > **For Claude:** before generating any persona files, **echo back the exact list** you will install based on the user's tier choice and ask "confirm? (yes / change)". Do NOT add personas the user did not pick — including "useful extras" like mentor. The tier is a contract, not a starting point. If the user wants a non-default set, they say `custom`.
 - [ ] **Q4.2** For each chosen persona, pick delivery format. Default rule: skills with sub-files go to `.claude/skills/NAME/SKILL.md`; single-file personas go to `.claude/commands/NAME.md`. **Five personas (implementer, investigator, reviewer, safety, performance) use the forked-context pattern: `context: fork` + matching `.claude/agents/NAME.md` file** — see [`kit/02-skill-catalog.md` § The Forked-Context Pattern](kit/02-skill-catalog.md). (auto / let me decide each / skip)
 - [ ] **Q4.3** Customize each persona's domain language to match your project? (yes / generic only / skip)
   - **`yes`** = ask the user for project terminology, fill `{{PERSONA_DESCRIPTION}}`, `{{EXPERTISE_*}}`, `{{SAFETY_AREA_*}}` placeholders with real content

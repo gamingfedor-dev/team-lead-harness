@@ -28,3 +28,4 @@ build/
 
 # Internal QA — not pushed to public repo
 SMOKE_TEST_RESULTS*.md
+LIVE_FIRE_TEST.md

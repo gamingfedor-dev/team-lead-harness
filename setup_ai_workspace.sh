@@ -1483,9 +1483,14 @@ generate_settings() {
     ],
     "PostToolUse": [
       {
+        "matcher": "Edit|Write|mcp__obsidian__obsidian_update_note|mcp__obsidian__obsidian_append_note",
+        "hooks": [
+          { "type": "command", "command": "\"\$CLAUDE_PROJECT_DIR\"/.claude/hooks/track_modified.sh", "timeout": 5, "async": true }
+        ]
+      },
+      {
         "matcher": "Edit|Write",
         "hooks": [
-          { "type": "command", "command": "\"\$CLAUDE_PROJECT_DIR\"/.claude/hooks/track_modified.sh", "timeout": 5, "async": true },
           { "type": "command", "command": "\"\$CLAUDE_PROJECT_DIR\"/.claude/hooks/lint_on_edit.sh", "timeout": 30 }
         ]
       },
