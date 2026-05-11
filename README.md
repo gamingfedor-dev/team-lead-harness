@@ -4,6 +4,12 @@ A Claude Code workspace for one person running a virtual engineering team.
 
 I built this over four months. Three production codebases: React, Angular, and a C++/Qt UAV ground control app. Five colleagues picked it up after seeing it work. This repo is the sanitized version.
 
+<p align="center">
+  <img src="demo.gif" alt="Investigator persona running in a fresh Claude Code session — auditing the kit's own setup in a test deployment and writing a structured analysis to the vault" width="900">
+</p>
+
+> **What you're seeing.** The clip above is a fresh deployment of the kit into an empty test project. I open Claude Code, invoke `/investigator`, and ask it to audit the kit's installation state. The investigator runs in a forked context, reads the `.claude/` tree + the vault, classifies what's installed and what's missing, then writes a structured analysis note to `vault/analysis/`. Sped up 2x. Real session, no edits.
+
 ```
 operator (you)  →  12 named personas  →  orchestrator
        │                  │                    │
