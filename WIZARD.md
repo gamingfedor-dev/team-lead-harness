@@ -19,7 +19,12 @@ You are running an interactive setup wizard for a colleague who may be new to Cl
 5. **Respect prerequisites.** Never run a step whose prerequisites are unsatisfied. Tell the user what's missing and offer to backfill it (or skip both).
 6. **Confirm destructive actions.** Always show a diff or planned-action summary before creating files outside the project root, overwriting existing files, or running `chmod`.
 7. **Keep questions short.** One sentence. Use `(option1 / option2 / skip)` format. Avoid open-ended prose questions unless the step explicitly needs prose (e.g., "describe your tech stack").
-8. **Reference the kit.** When the user picks a module, read the relevant kit file (`kit/0X-*.md`) before generating any code or config.
+8. **Reference the kit AND the templates.** When the user picks a module, read the relevant kit file (`kit/0X-*.md`) for context and customization guidance. Then **copy from `templates/` as the canonical source for files**:
+   - Personas → copy from `templates/personas/<name>.md` into `.claude/commands/<name>.md`
+   - Hook scripts → copy from `templates/scripts/<name>.sh` into `.claude/hooks/<name>.sh`
+   - Helper scripts (`skill_context.sh`) → copy into `.claude/scripts/`
+   - Vault note templates → copy from `templates/vault/*.md` into the user's `<Vault>/templates/`
+   - Substitute placeholders (`{{IMPLEMENTER_NAME}}`, `{{VAULT_NAME}}`, `{{BUILD_COMMAND}}`, etc.) based on user input. Leave persona-flavor placeholders (`{{PERSONA_DESCRIPTION}}`, `{{EXPERTISE_*}}`) as TODO markers if the user picks `generic only` in Q4.3.
 9. **No project-specific assumptions.** This kit is generic. Mirror the user's own project terminology back to them.
 
 When ready, greet the user with:
@@ -37,6 +42,7 @@ The wizard walks through three layers: orientation → module selection → per-
   - If yes → recommend reading [`kit/07-onboarding-quickstart.md`](kit/07-onboarding-quickstart.md) before proceeding
 - [ ] **Q0.2** Project directory absolute path? (paste path / `cwd` / skip)
 - [ ] **Q0.3** Brief project description — tech stack, domain, main goals in 1–2 sentences
+- [ ] **Q0.4** Vault folder name and absolute path (used by Module B even if you skip Module A — settings.local.json needs the path) (default name: `MyProjectVault`, default path: parent of project dir)
 
 ---
 
@@ -63,9 +69,9 @@ The wizard walks through three layers: orientation → module selection → per-
 > Prerequisites: none. Recommended baseline.
 
 - [ ] **Q2.1** Tell me about your tech stack — languages, frameworks, build system, key directories
-- [ ] **Q2.2** Generate `CLAUDE.md` from [`kit/01-claude-md-template.md`](kit/01-claude-md-template.md), filling tech stack? (yes / skip)
-- [ ] **Q2.3** Generate `.claude/settings.local.json` from [`kit/06-settings-reference.md`](kit/06-settings-reference.md)? (yes / skip)
-- [ ] **Q2.4** Copy [`kit/05-token-strategy.md`](kit/05-token-strategy.md) to `.claude/token_strategy.md` as-is? (yes / skip)
+- [ ] **Q2.2** Generate `CLAUDE.md` from [`kit/01-claude-md-template.md`](kit/01-claude-md-template.md), filling tech stack. **Leave `{{*_SKILL}}` placeholders in the routing table for Module C to fill.** (yes / skip)
+- [ ] **Q2.3** Generate `.claude/settings.local.json` from [`kit/06-settings-reference.md`](kit/06-settings-reference.md), substituting vault path from Q0.4. **Generate without the `hooks:` block — Module D inserts it.** (yes / skip)
+- [ ] **Q2.4** Copy [`kit/05-token-strategy.md`](kit/05-token-strategy.md) content (strip frontmatter) to `.claude/token_strategy.md`? (yes / skip)
 - [ ] **Q2.5** Create `.claude/` directory tree (`skills/`, `commands/`, `agents/`, `hooks/`, `scripts/`, `sessions/`)? (yes / skip)
 
 ---
@@ -95,13 +101,13 @@ The vault is a separate Obsidian folder that lives **outside your code repo**. I
 > **Want a deeper tour before setting up?** Read [`kit/04-vault-blueprint.md`](kit/04-vault-blueprint.md) section *Vault — What It Is and Why* first.
 
 - [ ] **Q3.0** Did you read the "What the vault is" block above and want to proceed? (yes / tell me more / skip Module A)
-- [ ] **Q3.1** Where should the vault live? (default: `../<project>Vault`)
+- [ ] **Q3.1** Confirm vault path from Q0.4 (or override now). Default: `../MyProjectVault`.
 - [ ] **Q3.2** Is Obsidian CLI on PATH? Run `which obsidian` and report the result. (found / not found / skip)
   - If not found → offer the install steps from [`kit/04-vault-blueprint.md`](kit/04-vault-blueprint.md)
-- [ ] **Q3.3** Create vault folder structure from [`kit/04-vault-blueprint.md`](kit/04-vault-blueprint.md) (templates/, daily/, weekly/, plans/, decisions/, analysis/, guides/, workflows/, memory/, reference/)? (yes / skip)
-- [ ] **Q3.4** Initialize the vault as its own git repo? (yes / skip)
+- [ ] **Q3.3** Create vault folder structure. Recommended approach: `bash templates/scripts/init_vault.sh ../<vault-name>`. This creates `analysis/`, `bugs/`, `daily/`, `decisions/`, `guides/`, `memory/`, `plans/{active,planning,legacy/{completed,superseded}}/`, `reference/`, `templates/`, `weekly/`, `workflows/`, copies all 9 vault note templates from `templates/vault/`, and initialises a git repo. (yes — use script / yes — manual / skip)
+- [ ] **Q3.4** *(skip if Q3.3 used the script — already done.)* Initialize the vault as its own git repo? (yes / skip)
 - [ ] **Q3.5** Symlink `vault -> ../<vault>` in project root? (yes / skip)
-- [ ] **Q3.6** Add `additionalDirectories` entry to `settings.local.json`? (yes / skip — only valid if Module B ran)
+- [ ] **Q3.6** Verify `additionalDirectories` entry in `settings.local.json` points at the actual vault path (Q2.3 already pre-filled from Q0.4 — confirm it's correct). (yes / fix it / skip — only valid if Module B ran)
 
 ---
 
@@ -109,14 +115,16 @@ The vault is a separate Obsidian folder that lives **outside your code repo**. I
 
 > Prerequisites: Module B (CLAUDE.md must exist so the routing table can reference personas).
 
-- [ ] **Q4.1** Which starter personas? Pick a tier:
-  - `minimum` — implementer + reviewer + investigator
-  - `productive` — minimum + mentor + pragmatist
-  - `full` — productive + orchestrator + vault navigator + weekly summary
-  - `custom` — list specific names from [`kit/02-skill-catalog.md`](kit/02-skill-catalog.md)
-- [ ] **Q4.2** For each chosen persona, pick delivery format. Default rule: progressive-loading needs → skill; single-file → command; orchestrator-only → agent. (auto / let me decide each / skip)
+- [ ] **Q4.1** Which starter personas? Pick a tier (templates live in `templates/personas/`):
+  - `minimum` — implementer + reviewer + investigator (3 personas)
+  - `productive` — minimum + mentor + pragmatist (5)
+  - `extended` — productive + orchestrator + vault + weekly (7)
+  - `full` — all 12 personas (implementer, investigator, reviewer, safety, performance, crash, mentor, pragmatist, orchestrator, vault, weekly, domain-skill)
+  - `custom` — list specific names from `templates/personas/` ([`kit/02-skill-catalog.md`](kit/02-skill-catalog.md) explains the pattern)
+- [ ] **Q4.2** For each chosen persona, pick delivery format. Default rule: skills with sub-files go to `.claude/skills/NAME/SKILL.md`; single-file personas go to `.claude/commands/NAME.md`. **Five personas (implementer, investigator, reviewer, safety, performance) use the forked-context pattern: `context: fork` + matching `.claude/agents/NAME.md` file** — see [`kit/02-skill-catalog.md` § The Forked-Context Pattern](kit/02-skill-catalog.md). (auto / let me decide each / skip)
 - [ ] **Q4.3** Customize each persona's domain language to match your project? (yes / generic only / skip)
-- [ ] **Q4.4** Wire routing table in CLAUDE.md (request-pattern → skill mapping)? (yes / skip)
+- [ ] **Q4.4** Replace `{{*_SKILL}}` placeholders in CLAUDE.md routing table with the persona names you picked. (yes / skip)
+- [ ] **Q4.5** Create `.claude/agents/<name>.md` subagent metadata for the forked-context skills (default: implementer, investigator, reviewer, safety, performance). Required for the orchestrator to spawn them via Task. (yes — required for orchestrator / skip if not using orchestrator)
 
 ---
 
@@ -124,13 +132,15 @@ The vault is a separate Obsidian folder that lives **outside your code repo**. I
 
 > Prerequisites: Module B (settings.local.json must exist). Module A recommended — vault-writing hooks are inert without a vault but do not error.
 
-- [ ] **Q5.1** Pick starter hook set:
-  - `minimum` — `session_context.sh` + `track_modified.sh` + `on_commit.sh`
+- [ ] **Q5.1** Pick starter hook set (copy from `templates/scripts/` into `.claude/hooks/`):
+  - `minimum` — `session_context.sh` + `track_modified.sh` + `on_commit.sh` + `session_cleanup.sh`
   - `productive` — minimum + `lint_on_edit.sh` + `pre_compact.sh`
-  - `full` — productive + `enforce_task_tests.sh` + `on_agent_stop.sh` + project-specific hooks
-- [ ] **Q5.2** Copy `_common.sh` shared library to `.claude/hooks/`? (yes — required for any hook)
-- [ ] **Q5.3** Make all hook scripts executable (`chmod +x`)? (yes — required)
-- [ ] **Q5.4** Wire `hooks:` block in `settings.local.json` with correct event matchers (SessionStart, PostToolUse for `mcp__git__*`, etc.)? (yes — required)
+  - `full` — productive + `enforce_task_tests.sh` + `on_agent_stop.sh` + `lint_precommit.sh` + project-specific hooks
+- [ ] **Q5.2** Copy `templates/scripts/_common.sh` to `.claude/hooks/_common.sh`. (yes — required for any hook)
+- [ ] **Q5.3** Copy `templates/scripts/skill_context.sh` to `.claude/scripts/skill_context.sh` — referenced by every persona's `## Context` block. (yes — required)
+- [ ] **Q5.4** Substitute `{{VAULT_NAME}}` in `_common.sh` and `skill_context.sh` with the vault name from Q0.4. (yes — required)
+- [ ] **Q5.5** Make all hook + helper scripts executable (`chmod +x .claude/hooks/*.sh .claude/scripts/*.sh`). (yes — required)
+- [ ] **Q5.6** Insert `hooks:` block into existing `settings.local.json` with correct event matchers (SessionStart, PostToolUse Edit|Write, PostToolUse mcp__git__git_commit, SessionEnd, plus `Stop` and `SubagentStop` for `full` tier). See `kit/06-settings-reference.md` § hooks for the full layout. (yes — required)
 
 ---
 
@@ -139,9 +149,9 @@ The vault is a separate Obsidian folder that lives **outside your code repo**. I
 > Run only the questions for modules you completed.
 
 - [ ] **Q6.1** *(after B)* Start a session: `claude` from project root — completes without errors? (yes / error)
-- [ ] **Q6.2** *(after D)* SessionStart context banner appears with branch + recent dailies? (yes / no)
+- [ ] **Q6.2** *(after B + D)* SessionStart context banner appears with branch + recent dailies? (yes / no)
 - [ ] **Q6.3** *(after A)* `obsidian daily:read vault=<your-vault-name>` prints today's note (or empty result, not error)? (yes / no)
-- [ ] **Q6.4** *(after C)* `/implementer hello world` loads the persona and responds? (yes / no)
+- [ ] **Q6.4** *(after C)* `/<your-implementer-name> hello world` loads the persona and responds? Replace `<your-implementer-name>` with the actual command name (default: `/implementer`). (yes / no)
 
 ---
 
@@ -208,13 +218,13 @@ project/
 │   ├── sessions/      # Transient state (gitignore)
 │   ├── settings.local.json
 │   └── token_strategy.md
-└── vault -> ../ProjectVault    # Symlink (if Module A ran)
+└── vault -> ../MyProjectVault    # Symlink (if Module A ran)
 
-ProjectVault/                   # Separate repo
+MyProjectVault/                  # Separate repo
 ├── templates/
 ├── daily/  weekly/
 ├── plans/{active,planning,legacy/{completed,superseded}}/
-├── analysis/  decisions/  reference/   # Feature-split subdirs
+├── analysis/  bugs/  decisions/  reference/   # Feature-split subdirs
 ├── guides/<tech>/
 ├── workflows/  memory/
 └── .obsidian/
@@ -228,7 +238,7 @@ ProjectVault/                   # Separate repo
 | Claude Code | The CLI itself | `npm install -g @anthropic-ai/claude-code` |
 | Obsidian | Vault UI + CLI (Module A only) | [obsidian.md](https://obsidian.md) |
 | Obsidian CLI | Hook vault access (Module D + A) | Bundled with Obsidian |
-| jq | JSON parsing in hooks | `brew install jq` / `apt install jq` |
+| jq | JSON parsing in hooks (recommended — hooks degrade gracefully without it) | `brew install jq` / `apt install jq` |
 
 ### Architecture
 
@@ -241,12 +251,12 @@ ProjectVault/                   # Separate repo
 │  .claude/agents/   → subagent metadata         │
 │  .claude/hooks/    → automation                │
 └──────────────┬───────────────────────────────┘
-               │ MCP / Obsidian CLI
+               │ Obsidian CLI / MCP
 ┌──────────────▼───────────────────────────────┐
 │          Vault Access Layer                    │
 │  Obsidian CLI (primary)                        │
-│  obsidian-mcp-server (REST API, legacy)        │
-│  @anthropic/git-mcp                            │
+│  obsidian-mcp-server (optional REST API)       │
+│  Git MCP (optional)                            │
 └──────────────┬───────────────────────────────┘
                │
 ┌──────────────▼───────────────────────────────┐
@@ -256,20 +266,18 @@ ProjectVault/                   # Separate repo
 
 ---
 
-## Approach 2 (legacy): Auto-Detect Bash Script
+## Alternative: auto-detect script
 
-For users who prefer a non-interactive setup, `setup_ai_workspace.sh` scans the project and generates everything in one shot. The wizard above is more flexible and is the recommended path.
+For a non-interactive setup, `setup_ai_workspace.sh` scans the project and generates everything in one command:
 
 ```bash
-./setup_ai_workspace.sh --project-dir . --vault-dir ../MyVault --ide claude
+./setup_ai_workspace.sh --project-dir . --vault-dir ../MyProjectVault --ide claude
 ```
+
+The script is the fast path. The wizard above is the flexible path. Pick whichever fits.
 
 ---
 
 ## After Setup
 
-1. Use `/implementer`, `/reviewer`, etc. on real tasks for a week
-2. Document recurring patterns as new skills in `vault/guides/`
-3. Customize `on_commit.sh` `auto_tag()` for your directory layout
-4. Run `/weekly` after a week to generate your first weekly summary
-5. Revisit Module D to add hooks you skipped (lint, test enforcement)
+See [`README.md` § After Setup](README.md) for the post-install workflow and first-week customisation tips.
