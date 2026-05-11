@@ -1,66 +1,153 @@
-# harness
+# team-lead-harness
 
-A production-tested workspace for running Claude Code as serious engineering work, not chat.
+A Claude Code workspace for one person running a virtual engineering team.
 
-Built over four months of daily use across three production codebases — React 19, Angular 20, and C++/Qt6 — by an engineer who measures every primitive and ships code reviewed by humans. Five engineers across two teams adopted it.
+I built this over four months across three production codebases — React, Angular, and a C++/Qt UAV ground control app. Five colleagues picked it up after seeing it work. This repo is the sanitized version.
 
-This repository is the sanitized, generic version. Drop it onto any project, run the wizard, get a working setup in 5–40 minutes.
+```
+operator (you) ──▶  12 named personas  ──▶  orchestrator
+       │                  │                       │
+       └── reads ──▶ Obsidian vault (decisions, bugs, plans, daily/weekly)
+                                │
+                hooks guard every edit, commit, and task completion
+```
 
----
+## 30-second tour
 
-## What it is
+- Twelve specialised slash commands. `/implementer`, `/reviewer`, `/investigator`, `/safety`, `/performance`, `/crash`, `/mentor`, `/pragmatist`, `/orchestrator`, `/vault`, `/weekly`, and a `/domain-skill` template.
+- Investigation runs in a forked context window so big lookups don't pollute your main conversation.
+- The orchestrator assigns a reasoning tier (L1/L2/L3) to every spawned agent and has to justify it in writing. After the run it reports what tier it actually used vs what it planned. That feedback loop is what stops tier inflation week over week.
+- Obsidian vault, queried as a graph. The investigator runs `obsidian backlinks file=X` to see what depends on a decision; `obsidian search:context query=Y path=bugs` to find prior post-mortems with matching lines. No more re-grepping the world.
+- Ten hooks that gate task completion on tests, gate commits on lint, append commit logs to the daily note, snapshot state before context compaction, and log subagent findings to the vault.
+- A written token discipline. Direct tools before agents. Per-agent budget caps. Tests run once at the end of a multi-agent run, not five times.
 
-A team-lead sandbox for one human commanding a virtual multi-agent team.
-
-> One operator. Many specialised agents. Five layers of self-correction. Hook-level gates that cannot be talked around. Reasoning-budget feedback loop that measures its own drift.
-
-Inside the kit:
-
-| Component | What it does |
-|-----------|--------------|
-| **Skills + personas** | 12 specialised slash commands (`/implementer`, `/reviewer`, `/investigator`, `/safety`, `/performance`, `/crash`, `/mentor`, `/pragmatist`, `/orchestrator`, `/vault`, `/weekly`, `/domain-skill`) — each with persistent memory check, structured handoff protocol, and the forked-context pattern for expensive operations |
-| **Multi-agent orchestrator** | L1/L2/L3 reasoning tier system with mandatory written justification, mid-flight promotion rule, and the **Reasoning Budget Used** synthesis section that measures drift week-over-week |
-| **Hooks** | 10 scripts: `enforce_task_tests` gates Stop, `lint_precommit` gates commit, `track_modified` + `on_commit` build the audit trail, `pre_compact` snapshots state, `on_agent_stop` logs findings, `session_context` grounds every session |
-| **Vault** | Obsidian as a queryable knowledge graph — decisions, bugs, plans, analyses, daily notes, weekly synthesis. Investigator does graph traversal (`backlinks`, `links`, `search:context`), not blind grep |
-| **Token economy** | Direct-tools-first hard rule; per-agent budget caps; tests-run-once at end. ~40% measured token saving on typical multi-agent runs |
-
-Five layers compose into a defense-in-depth architecture: **skill → multi-agent → token → hooks → vault**. A failure that slips one layer should hit the next. See [`kit/08-self-correction.md`](kit/08-self-correction.md) for the full breakdown.
+Full architecture: [`kit/00-MASTER-GUIDE.md`](kit/00-MASTER-GUIDE.md). The self-correction argument: [`kit/08-self-correction.md`](kit/08-self-correction.md).
 
 ---
 
-## Why it exists
+## How a task moves through it
 
-Most "AI workflow" content stops at "install Claude Code and write a system prompt." That is configuration, not workflow.
+A real task — "fix the intermittent shutdown crash we saw last week":
 
-A workflow survives:
+```mermaid
+sequenceDiagram
+    participant You
+    participant Orchestrator
+    participant Investigator
+    participant Safety
+    participant Implementer
+    participant Reviewer
+    participant Vault
+    participant Hooks
 
-- A 30-bullet feature plan drifting from the code over three weeks
-- A merge request the model approves but a human would have flagged
-- A token bill doubling because every agent dispatches three subagents
-- A vault of past decisions the model never reads
-- A polyglot codebase where the same primitive means different things in JS, C++, and Python
+    You->>Orchestrator: /orchestrator fix shutdown crash
+    Orchestrator->>Vault: search:context bugs/ for prior post-mortems
+    Vault-->>Orchestrator: 2 prior reports, both partial fixes
+    Orchestrator->>Investigator: L1 — find proximate cause site
+    Investigator-->>Orchestrator: file:line + ownership chain
+    Orchestrator->>Safety: L2 — audit lifecycle (cross-thread suspected)
+    Safety-->>Orchestrator: gap in destruction path
+    Orchestrator->>Implementer: L2 — apply fix
+    Implementer->>Hooks: edit triggers lint_on_edit
+    Hooks-->>Implementer: clean
+    Implementer-->>Orchestrator: change ready
+    Orchestrator->>Reviewer: L3 (opus, production-critical) — review
+    Reviewer-->>Orchestrator: signed off
+    Orchestrator->>Hooks: enforce_task_tests gates commit
+    Hooks->>Vault: on_commit appends to today's daily note
+    Orchestrator->>You: Reasoning Budget Used report (planned tier vs actual)
+```
 
-This kit handles those failure modes. The README is a tour; the kit underneath is the runbook.
+Each agent is bounded by the prompt, justified by tier, and logged on exit. If one of them misses something, the next has a chance to catch it.
 
 ---
 
-## Results in production
+## Numbers
 
-Numbers from real engagements, sanitized.
+From real work, not benchmarks. Sample size is small. Caveats in the right column.
 
-- **Build time reduced from 1.5h to 15–20 minutes** on a legacy monolith decoupling project — planning driven by the investigator + planner personas.
-- **Document extraction pipeline accuracy 70% → 90–95%** over 12 months, with iteration plans authored and reviewed via the adversarial review.
-- **MCP → CLI migration cut tool round-trip token cost ~40%** after measurement; the workspace defaults to CLIs (`gh`, `glab`, `obsidian`) for high-frequency calls.
-- **Five engineers across two teams adopted the workspace** after onboarding from this kit. One of them is a non-engineer PM.
+| Metric | Before | After | Where + caveats |
+|---|---|---|---|
+| Build time on a legacy decoupling | 90 min | 15–20 min | One project; planning driven by investigator + planner. Single data point. |
+| Document extraction pipeline accuracy | 70% | 90–95% | Twelve months, iterative prompt review. Multi-step LLM extraction. |
+| Tool round-trip token cost | MCP baseline | ~40% lower | After moving high-frequency calls (git, vault, gh) from MCP to CLIs. Measured per-call. |
+| Adoption | 0 | 5 engineers + 1 PM | Two teams. PM uses the vault and mentor only. |
+
+These aren't proof the kit works everywhere. They're evidence it survived three different codebases without falling apart.
+
+---
+
+## What the vault looks like
+
+The vault is a separate git repo outside your project. The kit assumes this layout:
+
+```
+YourProjectVault/
+├── analysis/         ← post-mortems, investigations, profiling reports
+├── bugs/             ← bug post-mortems: symptoms → root cause → fix → verification
+├── daily/            ← one note per day, auto-populated by hooks
+├── decisions/        ← ADRs: why a choice was made, what alternatives were considered
+├── guides/           ← best practices per technology
+│   └── <tech>/       ← e.g. guides/react/, guides/postgres/
+├── memory/           ← long-lived personal notes, team context
+├── plans/
+│   ├── active/       ← in progress, status: active
+│   ├── planning/     ← scoped but not started
+│   └── legacy/
+│       ├── completed/   ← shipped, kept for historical reference
+│       └── superseded/  ← replaced by a better approach
+├── quizzes/          ← optional, mentor's flow-tracing questions
+├── reference/        ← external docs, cheatsheets
+├── templates/        ← skeletons used by hooks and commands
+├── weekly/           ← /weekly aggregates 7 dailies into one rollup
+├── workflows/        ← development processes and procedures
+├── dashboards.md     ← optional, Dataview queries (Obsidian plugin)
+├── MEMORY.md         ← top-level index for memory/
+└── QUICK_REFERENCE.md ← your own cheatsheet for the vault
+```
+
+Skills query the vault as a graph. The vault is the kit's long-term memory.
+
+Full tour with templates for every note type: [`kit/04-vault-blueprint.md`](kit/04-vault-blueprint.md).
+
+---
+
+## The five layers
+
+```mermaid
+flowchart TB
+    subgraph L5["Layer 5 — Vault"]
+        V[bugs · decisions · analysis · /weekly synthesis<br/>repeat-offender pattern catch]
+    end
+    subgraph L4["Layer 4 — Hooks"]
+        H[enforce_task_tests · lint_precommit · on_commit<br/>bash-level gates]
+    end
+    subgraph L3["Layer 3 — Token economy"]
+        T[direct-tools-first · per-agent budget caps<br/>tests run once at end of multi-agent run]
+    end
+    subgraph L2["Layer 2 — Multi-agent"]
+        M[tier system L1/L2/L3 with mandatory justification<br/>Reasoning Budget Used feedback loop<br/>adversarial reviewer in parallel with safety + pragmatist]
+    end
+    subgraph L1["Layer 1 — Skill"]
+        S[persistent memory check · mentor Iron Rules<br/>structured handoff protocol<br/>forked-context for expensive skills]
+    end
+    L1 --> L2 --> L3 --> L4 --> L5
+```
+
+A bug that slips Layer 1 should hit Layer 2. A token explosion that slips Layer 3 still surfaces in Layer 5's weekly review. The whole point is that no single layer carries the kit.
+
+Full breakdown, worked example, and the failure modes the kit cannot catch: [`kit/08-self-correction.md`](kit/08-self-correction.md). It's honest about what it doesn't do.
 
 ---
 
 ## Quickstart
 
-### Option 1 — Auto-detect script (fast)
+Two paths. Pick one.
+
+### Fast — auto-detect script
 
 ```bash
-git clone <this-repo> ~/harness
+git clone https://github.com/gamingfedor-dev/team-lead-harness.git ~/harness
 cd /path/to/your/project
 ~/harness/setup_ai_workspace.sh \
   --project-dir . \
@@ -68,105 +155,111 @@ cd /path/to/your/project
   --ide claude
 ```
 
-The script detects your tech stack, generates `CLAUDE.md`, copies all 12 persona templates + 10 hooks + the subagent metadata + a stack-aware `settings.local.json`, and initialises your Obsidian vault.
+Detects your tech stack. Generates `CLAUDE.md`, `.claude/commands/`, `.claude/agents/`, `.claude/hooks/`, and a stack-aware `settings.local.json`. Initialises your Obsidian vault.
 
-### Option 2 — Interactive wizard (flexible)
+### Flexible — interactive wizard
 
 ```bash
 cd /path/to/your/project
 claude
 ```
 
-Then paste [`WIZARD.md`](WIZARD.md) into the session. The wizard asks one question at a time. Every step is independently skippable.
+Paste [`WIZARD.md`](WIZARD.md) into the session. The wizard asks one question at a time. Every step is skippable.
 
 ---
 
-## Architecture
+## Personas at a glance
+
+| Skill | Role | Model | Notes |
+|---|---|---|---|
+| `/implementer` | Ships features and fixes | sonnet | Forked context. Hands off to `/safety` on memory work. |
+| `/investigator` | Gathers references, traces ownership chains | haiku | Forked. Only skill allowed to spawn agents for retrieval (web/vault). |
+| `/reviewer` | Adversarial review, edge cases, untested assumptions | haiku, opus on production-critical paths | The one path opus runs by default. |
+| `/safety` | Memory, lifecycle, resource ownership audits | haiku | Forked. Maps creation → storage → transfer → usage → destruction. |
+| `/performance` | Profiles hot paths, classifies cause | haiku | Forced "measure first" discipline. Three-numbers rule for every recommendation. |
+| `/crash` | Reads crash reports, walks backtraces | haiku | Multi-platform exception tables. Hypothesis with falsification test. |
+| `/mentor` | Socratic flow-tracing tutor with a play-state framework | haiku | Seven Iron Rules. Never explains unprompted. Grades 7–10. |
+| `/pragmatist` | Anti-over-engineering brake | haiku | Asks "could I hotfix at 3 am?" |
+| `/orchestrator` | Multi-agent commander with tier system | main conv | Phase 1.5 tier assignment, Phase 4 Reasoning Budget Used. |
+| `/vault` | Obsidian CLI navigator | haiku | Health checks too: orphans, unresolved wikilinks, deadends. |
+| `/weekly` | Aggregates 7 dailies into a weekly rollup | haiku | ISO week numbering. Parses session tables. |
+| `/domain-skill` | Template for a project-specific expert | — | Fill once per domain (UAV, payments, design system, etc.). |
+
+You can keep these names or rename them. I use anime and film character handles — `/o7`, `/devil`, `/hanji`, `/loid`, `/pylyp`, `/otto` — for reflexive routing in my head. The pattern is documented in [`kit/02-skill-catalog.md` § Persona Identity](kit/02-skill-catalog.md). Generic names work fine.
+
+---
+
+## Module map
+
+The kit ships as five independent modules. Pick any combination.
+
+| Module | Time | Depends on | What you get |
+|---|---|---|---|
+| A. Vault | 10 min | Obsidian app | Knowledge base as a queryable graph |
+| B. Claude config | 10 min | — | `CLAUDE.md` + `.claude/` + `settings.local.json` |
+| C. Personas | 20 min | B | The 12 slash commands |
+| D. Hooks | 10 min | B (A recommended) | Session, edit, commit, agent-stop gates |
+| E. Validation | 5 min | whichever you ran | Smoke test |
+
+Minimum viable: B alone. Recommended starter: B + C. Full setup: A → B → C → D → E.
+
+---
+
+## FAQ
+
+**Is this just a Claude Code config?**
+No. A config is `settings.local.json`. This is a workflow with five layers of correction built in. The config is one of the layers, not the whole thing.
+
+**Why Obsidian, not Notion / Linear / a GitHub wiki?**
+The vault needs to be a local markdown directory the CLI can read in milliseconds. Obsidian also has graph traversal commands (`backlinks`, `links`) the investigator depends on. Notion's API is slow. Linear is per-issue. Wikis have no graph queries. You can swap if you want; the abstraction is "a markdown directory with a CLI."
+
+**Twelve personas feels like a lot.**
+You won't use them all. The minimum viable set is three: `/implementer`, `/reviewer`, `/investigator`. Add more when you hit a problem the current set doesn't cover. Most days I run with five.
+
+**Will this work without the vault?**
+Yes, with degraded self-correction. The vault is layer 5. Skipping it means repeat-offender bugs aren't surfaced, decisions aren't recorded, and the investigator can't graph-traverse prior work. Vault-writing hooks become no-ops, no errors.
+
+**Will this work on Windows?**
+The hook scripts are bash. WSL is fine. Native Windows would need a PowerShell port. PRs welcome.
+
+**How much does it cost to run?**
+Depends on how many multi-agent orchestrations you spawn. Single-skill use is cheap. The token economy rules in Layer 3 exist to keep multi-agent runs bounded; without them they get expensive quickly.
+
+**What does it not catch?**
+Bad requirements. A correctly-implemented wrong feature is still wrong. Also: vault rot (if you stop writing post-mortems, layer 5 starves), hook drift (lint config diverges from project), and bug classes the reviewer wasn't given expertise to look for. [`kit/08-self-correction.md` § Failure Modes](kit/08-self-correction.md) is explicit about this.
+
+**Can I use this with Cursor / Codex / other tools instead of Claude Code?**
+Partially. The vault, templates, and persona prompts port. The hooks and the `.claude/` directory are Claude Code-specific. Cursor users have lifted personas from `templates/personas/` and the patterns from `kit/02-skill-catalog.md`.
+
+---
+
+## What's in this repo
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                Claude Code CLI                      │
-│  CLAUDE.md         → project rules + routing        │
-│  .claude/skills    → progressive-load personas      │
-│  .claude/commands  → single-file slash commands     │
-│  .claude/agents    → subagent metadata (Task)       │
-│  .claude/hooks     → session/edit/commit gates      │
-└─────────────────┬───────────────────────────────────┘
-                  │  CLI-first (gh/glab/obsidian), MCP fallback
-                  ▼
-┌─────────────────────────────────────────────────────┐
-│             Tooling Layer                           │
-│   Obsidian CLI (graph traversal)                    │
-│   gh / glab (git platform ops)                      │
-│   Anthropic / OpenAI / Azure OpenAI                 │
-└─────────────────┬───────────────────────────────────┘
-                  │
-                  ▼
-┌─────────────────────────────────────────────────────┐
-│         Obsidian Vault (separate git repo)          │
-│   guides/  decisions/  analysis/  workflows/        │
-│   bugs/  plans/  memory/  daily/  weekly/           │
-└─────────────────────────────────────────────────────┘
+team-lead-harness/
+├── README.md              ← you are here
+├── WIZARD.md              ← paste into Claude Code for interactive setup
+├── setup_ai_workspace.sh  ← auto-detect script (alternative to wizard)
+├── kit/                   ← reference docs, read once for context
+│   ├── 00-MASTER-GUIDE.md
+│   ├── 01-claude-md-template.md
+│   ├── 02-skill-catalog.md       ← persona templates + identity pattern
+│   ├── 03-hooks-kit.md           ← every hook script
+│   ├── 04-vault-blueprint.md     ← vault structure + Obsidian CLI
+│   ├── 05-token-strategy.md
+│   ├── 06-settings-reference.md
+│   ├── 07-onboarding-quickstart.md
+│   └── 08-self-correction.md     ← the architecture argument
+└── templates/             ← files copied into your project
+    ├── personas/          ← 12 persona templates
+    ├── scripts/           ← 12 hook + helper scripts
+    ├── vault/             ← 9 vault note templates
+    └── guides/            ← seed guides
 ```
-
----
-
-## Modules
-
-| Letter | Module | Time | What it gives you |
-|--------|--------|------|-------------------|
-| **A** | Vault | 10 min | Obsidian knowledge base outside the repo, wired as a queryable graph |
-| **B** | Claude config | 10 min | `CLAUDE.md` + `.claude/` directory + `settings.local.json` (recommended baseline) |
-| **C** | Personas | 20 min | Slash commands for the 12 specialised agents |
-| **D** | Hooks | 10 min | Session, edit, commit, agent-stop, pre-compact gates |
-| **E** | Validation | 5 min | Smoke test for the modules you ran |
-
-Modules are independent. Minimum viable: B alone. Recommended starter: B + C. Full setup: A + B + C + D + E.
-
-Each module is documented in its own kit file ([`kit/00-MASTER-GUIDE.md`](kit/00-MASTER-GUIDE.md) has the contents table).
-
----
-
-## Kit Files
-
-| File | Purpose |
-|------|---------|
-| [`WIZARD.md`](WIZARD.md) | Interactive setup wizard (paste into Claude Code) |
-| [`kit/00-MASTER-GUIDE.md`](kit/00-MASTER-GUIDE.md) | Architecture overview, design decisions, scaling |
-| [`kit/01-claude-md-template.md`](kit/01-claude-md-template.md) | CLAUDE.md skeleton |
-| [`kit/02-skill-catalog.md`](kit/02-skill-catalog.md) | Persona templates + persona-identity pattern + forked-context pattern |
-| [`kit/03-hooks-kit.md`](kit/03-hooks-kit.md) | 13-hook layout + `_common.sh` |
-| [`kit/04-vault-blueprint.md`](kit/04-vault-blueprint.md) | Vault structure + Obsidian CLI |
-| [`kit/05-token-strategy.md`](kit/05-token-strategy.md) | Token budget rules (copy as-is) |
-| [`kit/06-settings-reference.md`](kit/06-settings-reference.md) | `settings.local.json` reference |
-| [`kit/07-onboarding-quickstart.md`](kit/07-onboarding-quickstart.md) | 5-minute newcomer intro |
-| **[`kit/08-self-correction.md`](kit/08-self-correction.md)** | **Self-correction architecture across 5 layers** — defense in depth, worked example, accepted failure modes |
-
----
-
-## Design principles
-
-1. **Direct tools before agents.** Agents are expensive and lossy. If a CLI call answers the question, use it.
-2. **Cheap models do retrieval, stronger models do synthesis.** Multi-model dispatch is configured per persona.
-3. **One human merges code.** The workspace never auto-merges. Reviews surface conflicts; humans resolve.
-4. **State lives in the vault, not the conversation.** Long-running context goes to Obsidian, not chat history.
-5. **Token economy is a written rule, not a vibe.** Per-agent budget caps live in `token_strategy.md`.
-6. **Tier discipline.** Default to L1. Every promotion above L1 must be defended in writing.
-7. **Skipping is always valid.** Modular setup — you do not need the whole stack to get value.
-
----
-
-## Persona identity
-
-The kit ships with 12 named slash commands. The operator's own deployment uses character handles drawn from anime / film — `/o7`, `/devil`, `/hanji`, `/loid`, `/pylyp`, `/otto`, etc. This is documented in [`kit/02-skill-catalog.md`](kit/02-skill-catalog.md) as a creative pattern with three concrete purposes: reflexive routing, behavioural anchor, memorability. You can keep generic role names or pick your own characters — the kit works either way.
-
----
 
 ## Status
 
-- **Battle-tested** across React 19, Angular 20, C++/Qt6, Python. Daily use since early 2026.
-- **Sanitized** — no client, project, or proprietary content. Wizard prompts for project terminology.
-- **Open to feedback.** Issues and PRs welcome.
+Daily use since early 2026. React 19, Angular 20, C++/Qt6, Python. Setup script verified end-to-end on a fresh project. Issues and PRs welcome.
 
 ## License
 
