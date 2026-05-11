@@ -10,6 +10,12 @@ I built this over four months. Three production codebases: React, Angular, and a
 
 > **What you're seeing.** The clip above is a fresh deployment of the kit into an empty test project. I open Claude Code, invoke `/investigator`, and ask it to audit the kit's installation state. The investigator runs in a forked context, reads the `.claude/` tree + the vault, classifies what's installed and what's missing, then writes a structured analysis note to `vault/analysis/`. Sped up 2x. Real session, no edits.
 
+<p align="center">
+  <img src="deployment.gif" alt="The interactive setup wizard running in a fresh Claude Code session — picking personas, filling routing placeholders, wiring hooks, and finishing wrap-up" width="900">
+</p>
+
+> **Deployment in action.** This clip shows the wizard itself running on the same test project — paste `WIZARD.md` into Claude Code, answer the questions one at a time, end up with `CLAUDE.md`, `.claude/commands/`, `.claude/agents/`, `.claude/hooks/`, and a stack-aware `settings.local.json`. The segment covers Q4.2–Q4.5 (persona delivery format, placeholder fill, subagent metadata), then the Module D hooks, then the Q7 wrap-up. 2x speed.
+
 ```
 operator (you)  →  12 named personas  →  orchestrator
        │                  │                    │
