@@ -25,3 +25,6 @@ build/
 # Backups
 *.bak
 *.original.md
+
+# Internal QA — not pushed to public repo
+SMOKE_TEST_RESULTS*.md

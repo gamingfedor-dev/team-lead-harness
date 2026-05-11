@@ -42,7 +42,7 @@ The wizard walks through three layers: orientation → module selection → per-
   - If yes → recommend reading [`kit/07-onboarding-quickstart.md`](kit/07-onboarding-quickstart.md) before proceeding
 - [ ] **Q0.2** Project directory absolute path? (paste path / `cwd` / skip)
 - [ ] **Q0.3** Brief project description — tech stack, domain, main goals in 1–2 sentences
-- [ ] **Q0.4** Vault folder name and absolute path (used by Module B even if you skip Module A — settings.local.json needs the path) (default name: `MyProjectVault`, default path: parent of project dir)
+- [ ] **Q0.4** Vault folder name and absolute path. **Required even if you skip Module A** — Module B's `settings.local.json` references it. If you skip Module A, the `additionalDirectories` and vault permission lines are omitted entirely (Claude treats the field as unused, not as a broken pointer). (default name: `MyProjectVault`, default path: sibling of project dir / no vault)
 
 ---
 
@@ -54,11 +54,13 @@ The wizard walks through three layers: orientation → module selection → per-
 |--------|--------|------|-----|
 | **A** | Vault | 10 min | Obsidian knowledge base outside the repo |
 | **B** | Claude config | 10 min | CLAUDE.md + settings.local.json (recommended starting point) |
-| **C** | Personas | 20 min | Slash commands like `/implementer`, `/reviewer`, `/otto` |
+| **C** | Personas | 20 min | Slash commands like `/implementer`, `/reviewer`, `/orchestrator` |
 | **D** | Hooks | 10 min | Session/commit/edit automation |
 | **E** | Validation | 5 min | Smoke test |
 
-  - Reply with letters (e.g., `B C D`) or shortcuts: `all` (everything), `minimum` (B only), `productive` (B C), `full` (A B C D E)
+  - Reply with letters (e.g., `B C D`) or shortcuts: `all` (everything), `minimum-modules` (B only), `starter` (B + C), `everything` (A B C D E)
+
+> Note: the words `minimum`, `productive`, `extended`, `full` appear later as **persona-tier** names in Q4.1 and **hook-tier** names in Q5.1. They mean different things in each step. The module shortcuts above intentionally avoid those words to prevent collision.
 
 > Claude: only run the steps below for modules the user picked. Mark unselected modules `[~]` (skipped) up front.
 
@@ -70,7 +72,7 @@ The wizard walks through three layers: orientation → module selection → per-
 
 - [ ] **Q2.1** Tell me about your tech stack — languages, frameworks, build system, key directories
 - [ ] **Q2.2** Generate `CLAUDE.md` from [`kit/01-claude-md-template.md`](kit/01-claude-md-template.md), filling tech stack. **Leave `{{*_SKILL}}` placeholders in the routing table for Module C to fill.** (yes / skip)
-- [ ] **Q2.3** Generate `.claude/settings.local.json` from [`kit/06-settings-reference.md`](kit/06-settings-reference.md), substituting vault path from Q0.4. **Generate without the `hooks:` block — Module D inserts it.** (yes / skip)
+- [ ] **Q2.3** Generate `.claude/settings.local.json` from [`kit/06-settings-reference.md`](kit/06-settings-reference.md) Section 6 (full assembled file). Strip the `hooks:` block (Module D inserts it). Substitute placeholders: `{{BUILD_COMMAND}}`, `{{TEST_COMMAND}}` from Q2.1; `{{VAULT_ABSOLUTE_PATH}}` and `{{VAULT_NAME}}` from Q0.4. **If Module A is skipped, omit the Section-4 vault-permission lines and the `additionalDirectories` field entirely** — do not leave them pointing at a non-existent path. **If Module C is skipped or `pragmatist`/`investigator` are not picked, omit `Skill(...)` lines for those personas.** Verify the resulting file parses as valid JSON before writing. (yes / skip)
 - [ ] **Q2.4** Copy [`kit/05-token-strategy.md`](kit/05-token-strategy.md) content (strip frontmatter) to `.claude/token_strategy.md`? (yes / skip)
 - [ ] **Q2.5** Create `.claude/` directory tree (`skills/`, `commands/`, `agents/`, `hooks/`, `scripts/`, `sessions/`)? (yes / skip)
 
@@ -102,8 +104,8 @@ The vault is a separate Obsidian folder that lives **outside your code repo**. I
 
 - [ ] **Q3.0** Did you read the "What the vault is" block above and want to proceed? (yes / tell me more / skip Module A)
 - [ ] **Q3.1** Confirm vault path from Q0.4 (or override now). Default: `../MyProjectVault`.
-- [ ] **Q3.2** Is Obsidian CLI on PATH? Run `which obsidian` and report the result. (found / not found / skip)
-  - If not found → offer the install steps from [`kit/04-vault-blueprint.md`](kit/04-vault-blueprint.md)
+- [ ] **Q3.2** Is Obsidian CLI on PATH? Run `which obsidian` and report. If not found, also check `ls /Applications/Obsidian.app/Contents/MacOS/Obsidian 2>/dev/null` (macOS bundle path). The binary ships with the desktop app but is not on PATH by default — offer `ln -s /Applications/Obsidian.app/Contents/MacOS/Obsidian /usr/local/bin/obsidian` as the symlink step. (found on PATH / found in app bundle / not installed / skip)
+  - If genuinely not installed → offer the install steps from [`kit/04-vault-blueprint.md`](kit/04-vault-blueprint.md)
 - [ ] **Q3.3** Create vault folder structure. Recommended approach: `bash templates/scripts/init_vault.sh ../<vault-name>`. This creates `analysis/`, `bugs/`, `daily/`, `decisions/`, `guides/`, `memory/`, `plans/{active,planning,legacy/{completed,superseded}}/`, `reference/`, `templates/`, `weekly/`, `workflows/`, copies all 9 vault note templates from `templates/vault/`, and initialises a git repo. (yes — use script / yes — manual / skip)
 - [ ] **Q3.4** *(skip if Q3.3 used the script — already done.)* Initialize the vault as its own git repo? (yes / skip)
 - [ ] **Q3.5** Symlink `vault -> ../<vault>` in project root? (yes / skip)
@@ -123,6 +125,8 @@ The vault is a separate Obsidian folder that lives **outside your code repo**. I
   - `custom` — list specific names from `templates/personas/` ([`kit/02-skill-catalog.md`](kit/02-skill-catalog.md) explains the pattern)
 - [ ] **Q4.2** For each chosen persona, pick delivery format. Default rule: skills with sub-files go to `.claude/skills/NAME/SKILL.md`; single-file personas go to `.claude/commands/NAME.md`. **Five personas (implementer, investigator, reviewer, safety, performance) use the forked-context pattern: `context: fork` + matching `.claude/agents/NAME.md` file** — see [`kit/02-skill-catalog.md` § The Forked-Context Pattern](kit/02-skill-catalog.md). (auto / let me decide each / skip)
 - [ ] **Q4.3** Customize each persona's domain language to match your project? (yes / generic only / skip)
+  - **`yes`** = ask the user for project terminology, fill `{{PERSONA_DESCRIPTION}}`, `{{EXPERTISE_*}}`, `{{SAFETY_AREA_*}}` placeholders with real content
+  - **`generic only`** = leave placeholders as literal `{{PERSONA_DESCRIPTION}}` markers. Persona files load and respond, but with empty flavour text where the markers sit. User can fill them later by editing the skill files directly. Validation Q6.4 should explicitly check that no `{{...}}` markers leak into responses.
 - [ ] **Q4.4** Replace `{{*_SKILL}}` placeholders in CLAUDE.md routing table with the persona names you picked. (yes / skip)
 - [ ] **Q4.5** Create `.claude/agents/<name>.md` subagent metadata for the forked-context skills (default: implementer, investigator, reviewer, safety, performance). Required for the orchestrator to spawn them via Task. (yes — required for orchestrator / skip if not using orchestrator)
 
@@ -140,7 +144,7 @@ The vault is a separate Obsidian folder that lives **outside your code repo**. I
 - [ ] **Q5.3** Copy `templates/scripts/skill_context.sh` to `.claude/scripts/skill_context.sh` — referenced by every persona's `## Context` block. (yes — required)
 - [ ] **Q5.4** Substitute `{{VAULT_NAME}}` in `_common.sh` and `skill_context.sh` with the vault name from Q0.4. (yes — required)
 - [ ] **Q5.5** Make all hook + helper scripts executable (`chmod +x .claude/hooks/*.sh .claude/scripts/*.sh`). (yes — required)
-- [ ] **Q5.6** Insert `hooks:` block into existing `settings.local.json` with correct event matchers (SessionStart, PostToolUse Edit|Write, PostToolUse mcp__git__git_commit, SessionEnd, plus `Stop` and `SubagentStop` for `full` tier). See `kit/06-settings-reference.md` § hooks for the full layout. (yes — required)
+- [ ] **Q5.6** Insert `hooks:` block into existing `settings.local.json` with correct event matchers (SessionStart, PostToolUse Edit|Write, PostToolUse mcp__git__git_commit, SessionEnd, plus `Stop` and `SubagentStop` for `full` tier). **For `SubagentStop`: substitute the matcher with the actual persona handles the user picked in Q4.** If the user kept generic names, use `implementer|reviewer|investigator|safety|performance`. If they renamed (e.g., to `/o7`, `/devil`, `/hanji`), use `o7|devil|hanji|gojo|rock`. The hook only fires when the matcher matches the agent name. See `kit/06-settings-reference.md` § hooks for the full layout. (yes — required)
 
 ---
 
@@ -151,7 +155,7 @@ The vault is a separate Obsidian folder that lives **outside your code repo**. I
 - [ ] **Q6.1** *(after B)* Start a session: `claude` from project root — completes without errors? (yes / error)
 - [ ] **Q6.2** *(after B + D)* SessionStart context banner appears with branch + recent dailies? (yes / no)
 - [ ] **Q6.3** *(after A)* `obsidian daily:read vault=<your-vault-name>` prints today's note (or empty result, not error)? (yes / no)
-- [ ] **Q6.4** *(after C)* `/<your-implementer-name> hello world` loads the persona and responds? Replace `<your-implementer-name>` with the actual command name (default: `/implementer`). (yes / no)
+- [ ] **Q6.4** *(after C)* `/<your-implementer-name> hello world` loads the persona and responds? Replace `<your-implementer-name>` with the actual command name (default: `/implementer`). **Also check: does the response contain any literal `{{...}}` markers?** If yes, the persona file has unsubstituted placeholders — re-run Q4.3 with `yes` to fill them. (yes — clean / yes — but placeholders leaked / no — persona missing)
 
 ---
 

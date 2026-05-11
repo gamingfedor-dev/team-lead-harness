@@ -188,6 +188,8 @@ This injects live data when the skill is invoked. Uses `skill_context.sh` helper
 ```markdown
 ---
 name: {{IMPLEMENTER_NAME}}
+context: fork
+agent: {{IMPLEMENTER_NAME}}
 description: Senior Implementation Engineer — implements features, fixes bugs, refactors with full system knowledge
 model: sonnet
 disable-model-invocation: true
@@ -284,6 +286,8 @@ Check if `$ARGUMENTS` contains `--use-opus`. If yes, strip it and use `model: "o
 ```markdown
 ---
 name: {{INVESTIGATOR_NAME}}
+context: fork
+agent: {{INVESTIGATOR_NAME}}
 description: |
   Evidence Investigator — gathers code references, traces ownership chains, and collects evidence.
   Auto-invokable by other skills for research tasks.
@@ -355,6 +359,8 @@ git log --oneline --all --grep="<keyword>" # Related commits
 ```markdown
 ---
 name: {{REVIEWER_NAME}}
+context: fork
+agent: {{REVIEWER_NAME}}
 description: Adversarial Analysis & Critical Review — finds failure points, code smells, and untested assumptions
 model: haiku
 disable-model-invocation: true
@@ -427,6 +433,8 @@ If no arguments provided, check for:
 ```markdown
 ---
 name: {{SAFETY_SKILL_NAME}}
+context: fork
+agent: {{SAFETY_SKILL_NAME}}
 description: Safety Auditor — audits memory management, security boundaries, and resource lifecycle
 model: haiku
 disable-model-invocation: true
@@ -492,6 +500,8 @@ Check if `$ARGUMENTS` contains `--use-opus`. If yes, strip it and use `model: "o
 ```markdown
 ---
 name: {{PERFORMANCE_SKILL_NAME}}
+context: fork
+agent: {{PERFORMANCE_SKILL_NAME}}
 description: Performance Optimizer — measures bottlenecks, profiles runtime, tunes performance
 model: haiku
 disable-model-invocation: true

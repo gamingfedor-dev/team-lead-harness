@@ -16,6 +16,82 @@ updated: 2026-04-28
 
 ## Complete Template
 
+The template is split into commented sections for readability. The JSON below is valid as-pasted (no comment lines).
+
+### Section 1 — base permissions (read-only shell operations + Obsidian CLI)
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(git log:*)",
+      "Bash(git checkout:*)",
+      "Bash(git mv:*)",
+      "Bash(tree:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(cat:*)",
+      "Bash(test:*)",
+      "Bash(sed:*)",
+      "Bash(date:*)",
+      "Bash(chmod:*)",
+      "Bash(wc:*)",
+      "Bash(obsidian:*)"
+    ]
+  }
+}
+```
+
+### Section 2 — build & test commands (customise for your project)
+
+Add these to the `allow` array. Replace placeholders with your actual commands.
+
+```json
+"Bash({{BUILD_COMMAND}}:*)",
+"Bash({{TEST_COMMAND}}:*)"
+```
+
+### Section 3 — MCP + Task + WebSearch
+
+```json
+"mcp__obsidian__*",
+"mcp__git__*",
+"Task(*)",
+"WebSearch"
+```
+
+### Section 4 — vault access (only if Module A ran)
+
+Omit this whole block if you have no vault. Substitute `{{VAULT_ABSOLUTE_PATH}}` with the real absolute path (e.g., `/Users/you/code/MyProjectVault`).
+
+```json
+"Write({{VAULT_ABSOLUTE_PATH}}/*)",
+"StrReplace({{VAULT_ABSOLUTE_PATH}}/*)",
+"Bash(* {{VAULT_ABSOLUTE_PATH}}/*)"
+```
+
+Also add to `permissions`:
+
+```json
+"additionalDirectories": [
+  "../{{VAULT_NAME}}"
+]
+```
+
+### Section 5 — auto-invocable skill permissions (only for personas you actually created in Module C)
+
+Add a `Skill(<name>)` line for each persona whose frontmatter says `disable-model-invocation: false` (rare — most personas use `true`). Default kit includes only:
+
+```json
+"Skill({{PRAGMATIST_NAME}})",
+"Skill({{INVESTIGATOR_NAME}})"
+```
+
+### Section 6 — full assembled file
+
+When you merge all sections, the file looks like this. Hooks block comes from `kit/03-hooks-kit.md` after Module D runs. MCP servers block is optional (see Section 7).
+
 ```json
 {
   "permissions": {
@@ -34,27 +110,15 @@ updated: 2026-04-28
       "Bash(chmod:*)",
       "Bash(wc:*)",
       "Bash(obsidian:*)",
-
-      "COMMENT: ── Build commands (customize for your project) ──",
       "Bash({{BUILD_COMMAND}}:*)",
       "Bash({{TEST_COMMAND}}:*)",
-
-      "COMMENT: ── MCP blanket permissions ──",
       "mcp__obsidian__*",
       "mcp__git__*",
-
-      "COMMENT: ── Vault file access via direct tools ──",
       "Write({{VAULT_ABSOLUTE_PATH}}/*)",
       "StrReplace({{VAULT_ABSOLUTE_PATH}}/*)",
       "Bash(* {{VAULT_ABSOLUTE_PATH}}/*)",
-
-      "COMMENT: ── Task agent permissions ──",
       "Task(*)",
-
-      "COMMENT: ── Web search for investigation skills ──",
       "WebSearch",
-
-      "COMMENT: ── Skill-specific auto-invocation permissions ──",
       "Skill({{PRAGMATIST_NAME}})",
       "Skill({{INVESTIGATOR_NAME}})"
     ],
@@ -112,36 +176,38 @@ updated: 2026-04-28
         ]
       }
     ]
-  },
-  "mcpServers": {
-    "COMMENT: obsidian-mcp-server is the legacy REST API approach.": "",
-    "COMMENT: Primary vault access is via Obsidian CLI (obsidian daily:append ...).": "",
-    "COMMENT: Add this block only if you need MCP tools (mcp__obsidian__*) in skills.": "",
-    "obsidian": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "obsidian-mcp-server"
-      ],
-      "env": {
-        "OBSIDIAN_API_KEY": "{{YOUR_OBSIDIAN_API_KEY}}",
-        "VERIFY_SSL": "false",
-        "OBSIDIAN_PROTOCOL": "https",
-        "OBSIDIAN_HOST": "127.0.0.1",
-        "OBSIDIAN_PORT": "27124",
-        "REQUEST_TIMEOUT": "3000",
-        "MAX_CONTENT_LENGTH": "52428800",
-        "MAX_BODY_LENGTH": "52428800",
-        "RATE_LIMIT_WINDOW_MS": "900000",
-        "RATE_LIMIT_MAX_REQUESTS": "200",
-        "TOOL_TIMEOUT_MS": "10000"
-      }
-    }
   }
 }
 ```
 
-> **Note:** Remove the `"COMMENT: ..."` lines — they're markers to help you understand sections. JSON does not support comments.
+### Section 7 — Optional `mcpServers` block (legacy REST API path)
+
+Primary vault access is via the Obsidian CLI (`obsidian daily:append ...`). The REST API path below is needed only if you want `mcp__obsidian__*` tools available inside Claude Code sessions. Add this object as a top-level sibling of `permissions` and `hooks` in the final JSON.
+
+```json
+"mcpServers": {
+  "obsidian": {
+    "command": "npx",
+    "args": [
+      "-y",
+      "obsidian-mcp-server"
+    ],
+    "env": {
+      "OBSIDIAN_API_KEY": "{{YOUR_OBSIDIAN_API_KEY}}",
+      "VERIFY_SSL": "false",
+      "OBSIDIAN_PROTOCOL": "https",
+      "OBSIDIAN_HOST": "127.0.0.1",
+      "OBSIDIAN_PORT": "27124",
+      "REQUEST_TIMEOUT": "3000",
+      "MAX_CONTENT_LENGTH": "52428800",
+      "MAX_BODY_LENGTH": "52428800",
+      "RATE_LIMIT_WINDOW_MS": "900000",
+      "RATE_LIMIT_MAX_REQUESTS": "200",
+      "TOOL_TIMEOUT_MS": "10000"
+    }
+  }
+}
+```
 
 ---
 

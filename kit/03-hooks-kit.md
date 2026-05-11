@@ -468,6 +468,8 @@ exit 2
 
 Appends agent findings to today's daily note when an agent finishes.
 
+> **Important:** The `SubagentStop` matcher in `settings.local.json` (see the full hook config below) lists generic persona handles by default: `implementer|reviewer|investigator|safety|performance`. **You must substitute your actual persona handles before this hook will fire.** If you renamed `/implementer` to `/o7`, `/reviewer` to `/devil`, etc., set the matcher to `o7|devil|hanji|gojo|rock`. The matcher uses Bash regex syntax with `|` as alternation. A hook that never matches is silently broken.
+
 ```bash
 #!/bin/bash
 # on_agent_stop.sh — SubagentStop hook
@@ -653,7 +655,7 @@ Full hook configuration for a mature setup with all 13 hooks:
     ],
     "SubagentStop": [
       {
-        "matcher": "implementer|reviewer|investigator|safety",
+        "matcher": "implementer|reviewer|investigator|safety|performance",
         "hooks": [
           {
             "type": "command",

@@ -225,9 +225,9 @@ All skills are in `.claude/skills/` and `.claude/commands/`. Subagent metadata l
 
 ### Quick Routing
 
-- **Implement/fix:** /{{IMPLEMENTER}} | **Review:** /{{REVIEWER}} | **Research:** /{{INVESTIGATOR}}
-- **Safety/memory:** /{{SAFETY}} | **Performance:** /{{PERFORMANCE}} | **Teach:** /{{MENTOR}}
-- **Orchestrate:** /{{ORCHESTRATOR}} | **Pragmatic:** /{{PRAGMATIST}}
+- **Implement/fix:** /{{IMPLEMENTER_SKILL}} | **Review:** /{{REVIEWER_SKILL}} | **Research:** /{{INVESTIGATOR_SKILL}}
+- **Safety/memory:** /{{SAFETY_SKILL}} | **Performance:** /{{PERFORMANCE_SKILL}} | **Teach:** /{{MENTOR_SKILL}}
+- **Orchestrate:** /{{ORCHESTRATOR_SKILL}} | **Pragmatic:** /{{PRAGMATIST_SKILL}}
 
 ### Skill Handoff Protocol
 
