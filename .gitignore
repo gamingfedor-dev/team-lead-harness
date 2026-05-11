@@ -1,0 +1,27 @@
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build artifacts
+node_modules/
+dist/
+build/
+
+# Claude Code session state (per-project, not shared)
+.claude/sessions/
+
+# Local overrides
+*.local.md
+*.local.sh
+
+# Test scratch
+/tmp-test/
+
+# Backups
+*.bak
+*.original.md
