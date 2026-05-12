@@ -1,4 +1,4 @@
-# team-lead-harness
+# Team Lead Harness (Orchestration Sandbox)
 
 A Claude Code workspace for one person running a virtual engineering team.
 
