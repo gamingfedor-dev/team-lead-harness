@@ -181,7 +181,7 @@ This kit assumes LLM-driven engineering fails in predictable ways: over-confiden
 | Layer | What catches it | Examples |
 |-------|-----------------|----------|
 | **1. Skill** | Intra-skill discipline | persistent-memory check, mentor's Iron Rules, structured handoff protocol, `context: fork` for expensive skills |
-| **2. Multi-agent** | Cross-skill cross-check | orchestrator tier system (L1/L2/L3) with mandatory justification, Reasoning Budget Used feedback loop, adversarial reviewer in parallel with safety + pragmatist |
+| **2. Multi-agent** | Cross-skill cross-check | orchestrator tier system (Operator / Engineer / Lead) with mandatory justification, Reasoning Budget Used feedback loop, adversarial reviewer in parallel with safety + pragmatist |
 | **3. Token economy** | Cost discipline | direct-tools-first rule, per-agent budget caps, tests-run-once at end |
 | **4. Hooks** | Gate enforcement | `enforce_task_tests.sh` blocks completion, `lint_precommit.sh` blocks commits, `track_modified.sh` + `on_commit.sh` audit trail, `pre_compact.sh` state snapshot |
 | **5. Vault** | Long-term memory & pattern catch | `bugs/` post-mortems, ADRs in `decisions/`, `/weekly` drift synthesis, `guides/` crystallization once a pattern recurs |
@@ -274,10 +274,10 @@ MyProjectVault/                  # Separate repo
 
 ## Alternative: auto-detect script
 
-For a non-interactive setup, `setup_ai_workspace.sh` scans the project and generates everything in one command:
+For a non-interactive setup, `setup_harness.sh` scans the project and generates everything in one command:
 
 ```bash
-./setup_ai_workspace.sh --project-dir . --vault-dir ../MyProjectVault --ide claude
+./setup_harness.sh --project-dir . --vault-dir ../MyProjectVault --ide claude
 ```
 
 The script is the fast path. The wizard above is the flexible path. Pick whichever fits.

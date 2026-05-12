@@ -50,11 +50,13 @@ Implementation / Bug Fix / Refactoring / Review / Design / Investigation / Learn
 
 ### Tier Definitions
 
-| Tier | Name | Scaffolding | When it applies |
+The harness ladders three reasoning tiers — **Operator**, **Engineer**, **Lead** — each a purposeful role with its own scaffolding. Use the name, not a number.
+
+| Tier | Role | Scaffolding | When it applies |
 |------|------|-------------|-----------------|
-| **L1** | Retrieval / Mechanical | *"Report what you find, not what you think should be there. Stick to evidence."* | Data lookup, file gathering, pattern matching, grep-and-report, format conversions. Ground-truth answer exists; the agent locates it. |
-| **L2** | Analytical | *"Think carefully before answering. Synthesize across sources; don't just retrieve."* | Cross-file synthesis, code review, risk surfacing, test-coverage analysis, refactor planning. Judgment over a bounded space with a known rubric. |
-| **L3** | Judgment / Adversarial | *"This is a high-stakes decision. Reason step by step. At the end, list what evidence would change your conclusion."* | Architectural decisions with ambiguous trade-offs, novel algorithms, adversarial review where a missed bug becomes a production incident. No ground-truth; misses are expensive. |
+| **Operator** | Retrieval / mechanical hand | *"Report what you find, not what you think should be there. Stick to evidence."* | Data lookup, file gathering, pattern matching, grep-and-report, format conversions. Ground-truth answer exists; the agent locates it. |
+| **Engineer** | Analytical builder | *"Think carefully before answering. Synthesize across sources; don't just retrieve."* | Cross-file synthesis, code review, risk surfacing, test-coverage analysis, refactor planning. Judgment over a bounded space with a known rubric. |
+| **Lead** | Judgment / adversarial owner | *"This is a high-stakes decision. Reason step by step. At the end, list what evidence would change your conclusion."* | Architectural decisions with ambiguous trade-offs, novel algorithms, adversarial review where a missed bug becomes a production incident. No ground-truth; misses are expensive. |
 
 ### Model Selection (frozen — tier controls scaffolding, not model)
 
@@ -69,34 +71,34 @@ The tier is **not** a model upgrade. It drives prompt scaffolding only. The sing
 ### Mandatory Per-Agent Format
 
 For each agent, write before spawning:
-- **Tier:** L1 / L2 / L3
+- **Tier:** Operator / Engineer / Lead
 - **Why:** one-line justification
 - **↓ Downgrade trigger:** condition under which the tier drops
 - **↑ Upgrade trigger:** condition under which the tier rises
 
-**Default to L1.** Every promotion above L1 must be defended in writing. Unjustified promotions are a bug, not a safety margin — tier inflation is the failure mode this phase exists to prevent.
+**Default to Operator.** Every promotion above Operator must be defended in writing. Unjustified promotions are a bug, not a safety margin — tier inflation is the failure mode this phase exists to prevent.
 
 ### Example Assignment
 
 ```
-1. /{{INVESTIGATOR_NAME}} — L1 — gather_evidence
+1. /{{INVESTIGATOR_NAME}} — Operator — gather_evidence
    Why: mechanical grep across pipeline/ + vault for prior shutdown analyses
-   ↓ L1 is floor
-   ↑ If prior analyses contradict each other, promote follow-up synthesis to L2
+   ↓ Operator is floor
+   ↑ If prior analyses contradict each other, promote follow-up synthesis to Engineer
 
-2. /{{SAFETY_NAME}} — L2 — audit
+2. /{{SAFETY_NAME}} — Engineer — audit
    Why: bounded synthesis over ownership chains and lifecycle boundaries
-   ↓ If investigator finds a published fix for this exact pattern, drop to L1 verification
-   ↑ If cross-thread deletion is implicated, promote to L3
+   ↓ If investigator finds a published fix for this exact pattern, drop to Operator verification
+   ↑ If cross-thread deletion is implicated, promote to Lead
 
-3. /{{IMPLEMENTER_NAME}} — L3 — implement_fix
+3. /{{IMPLEMENTER_NAME}} — Lead — implement_fix
    Why: novel lifecycle logic with 5 superseded attempts in vault history
-   ↓ If safety identifies a mechanical fix, drop to L2
-   ↑ N/A (L3 ceiling)
+   ↓ If safety identifies a mechanical fix, drop to Engineer
+   ↑ N/A (Lead ceiling)
 
-4. /{{REVIEWER_NAME}} — L3 (opus, production-critical exception) — critical_review
+4. /{{REVIEWER_NAME}} — Lead (opus, production-critical exception) — critical_review
    Why: production-deployment gate; missed risk becomes a customer-facing incident
-   ↓ Never — reviewer runs at L3 for production-critical code
+   ↓ Never — reviewer runs at Lead for production-critical code
    ↑ N/A
 ```
 
@@ -127,13 +129,13 @@ Design → [User Approval] → Implementer → [User Approval] → Reviewer
 
 | Task Type | Team (with tier hints) | Execution |
 |-----------|------------------------|-----------|
-| New Feature | Investigator(L1) → Design(L2) → Implementer(L2, L3 if novel) → QA(L2) → Reviewer(L2, L3 if prod-critical) | Sequential |
-| Bug Fix | Investigator(L1) → Implementer(L2) → Safety(L2 if memory) → Reviewer(L2) | Sequential |
-| Performance Issue | Investigator(L1) ∥ Performance(L2) → Reviewer(L2) → Implementer(L2) | Parallel then sequential |
-| Crash Analysis | Crash(L1) → Investigator(L1) → Safety(L2, L3 if cross-thread) → Implementer(L3) | Sequential |
-| Code Review | Reviewer(L2, L3 if prod-critical) ∥ Safety(L2) ∥ Pragmatist(L2) | Parallel |
-| Lifecycle / Resource Work | Investigator(L1) → Safety(L2, L3 if cross-thread) → Implementer(L3) → Safety(L1 verify) | Sequential with loop |
-| Test Coverage | Investigator(L1) → QA(L2) → Reviewer(L2 review tests) | Sequential |
+| New Feature | Investigator(Operator) → Design(Engineer) → Implementer(Engineer, Lead if novel) → QA(Engineer) → Reviewer(Engineer, Lead if prod-critical) | Sequential |
+| Bug Fix | Investigator(Operator) → Implementer(Engineer) → Safety(Engineer if memory) → Reviewer(Engineer) | Sequential |
+| Performance Issue | Investigator(Operator) ∥ Performance(Engineer) → Reviewer(Engineer) → Implementer(Engineer) | Parallel then sequential |
+| Crash Analysis | Crash(Operator) → Investigator(Operator) → Safety(Engineer, Lead if cross-thread) → Implementer(Lead) | Sequential |
+| Code Review | Reviewer(Engineer, Lead if prod-critical) ∥ Safety(Engineer) ∥ Pragmatist(Engineer) | Parallel |
+| Lifecycle / Resource Work | Investigator(Operator) → Safety(Engineer, Lead if cross-thread) → Implementer(Lead) → Safety(Operator verify) | Sequential with loop |
+| Test Coverage | Investigator(Operator) → QA(Engineer) → Reviewer(Engineer review tests) | Sequential |
 
 Tier hints above are defaults; Phase 1.5 still requires you to justify each tier per the actual task and may deviate.
 
@@ -169,9 +171,9 @@ For each agent in the execution plan:
 
 ### Prompt Scaffolding (prepend before task content)
 
-- **L1:** *"Report what you find, not what you think should be there. Stick to evidence."*
-- **L2:** *"Think carefully before answering. Synthesize across sources; don't just retrieve."*
-- **L3:** *"This is a high-stakes decision. Reason step by step. At the end, list what evidence would change your conclusion."*
+- **Operator:** *"Report what you find, not what you think should be there. Stick to evidence."*
+- **Engineer:** *"Think carefully before answering. Synthesize across sources; don't just retrieve."*
+- **Lead:** *"This is a high-stakes decision. Reason step by step. At the end, list what evidence would change your conclusion."*
 
 Scaffolding goes at the very top of the prompt, before any task-specific content or gathered data.
 
@@ -182,7 +184,7 @@ Append to every agent prompt:
 
 ### Mid-Flight Promotion Rule
 
-If an L1 agent's output reveals complexity beyond its rubric (e.g., investigator finds contradictory prior analyses, safety uncovers cross-thread deletion), the *next* agent in the chain may be promoted one tier (L1→L2, L2→L3) without pre-justification. The promotion must be logged in Phase 4 with the trigger that caused it. This is the *only* case where tier rises without prior written defense.
+If an Operator agent's output reveals complexity beyond its rubric (e.g., investigator finds contradictory prior analyses, safety uncovers cross-thread deletion), the *next* agent in the chain may be promoted one tier (Operator→Engineer, Engineer→Lead) without pre-justification. The promotion must be logged in Phase 4 with the trigger that caused it. This is the *only* case where tier rises without prior written defense.
 
 ### Handoff Protocol
 ```
@@ -236,7 +238,7 @@ Recommended Action: [action]
 1. [Action item]
 ```
 
-**The Reasoning Budget Used section is mandatory.** It creates the feedback loop that prevents tier inflation over time. Without it, Phase 1.5 silently drifts toward "L2 default, L3 whenever in doubt."
+**The Reasoning Budget Used section is mandatory.** It creates the feedback loop that prevents tier inflation over time. Without it, Phase 1.5 silently drifts toward "Engineer default, Lead whenever in doubt."
 
 Present the synthesis to the user when:
 - Multiple valid approaches exist

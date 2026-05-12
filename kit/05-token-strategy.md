@@ -161,4 +161,4 @@ When the orchestrator spawns multiple agents:
 2. **Pass gathered data IN the agent prompt** — don't make agents re-read files they don't need
 3. **Surgical prompts** — 1-2 sentences, specific questions, not "gather ALL references"
 4. **Tests run ONCE at the end** — tell every spawned agent to SKIP running tests. The orchestrator runs the full test suite a single time after all agents complete. Include "Do NOT run tests — [orchestrator name] will run the full suite after all agents complete" in every agent prompt.
-5. **Tier assignment** — assign L1/L2/L3 reasoning tiers per the orchestrator's Phase 1.5 rules. Default to L1; every promotion must be justified.
+5. **Tier assignment** — assign one of Operator / Engineer / Lead reasoning tiers per the orchestrator's Phase 1.5 rules. Default to Operator; every promotion must be justified.

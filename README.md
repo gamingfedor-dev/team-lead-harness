@@ -64,7 +64,7 @@ Twelve specialised slash commands. Names: `/implementer`, `/reviewer`, `/investi
 
 Investigation runs in a forked context window. The investigator can read 40 files and return a one-page summary without bloating the main conversation.
 
-The orchestrator assigns a reasoning tier (L1, L2, L3) to every spawned agent. It justifies the tier in writing before spawning. After the run it reports planned tier vs actual. That feedback loop is what stops tier inflation week over week.
+The orchestrator assigns a reasoning tier — **Operator**, **Engineer**, or **Lead** — to every spawned agent. The three tiers are named entities, not numeric labels: Operator gathers evidence, Engineer synthesizes across sources, Lead owns high-stakes judgment. The orchestrator justifies the tier in writing before spawning. After the run it reports planned tier vs actual. That feedback loop is what stops tier inflation week over week.
 
 The Obsidian vault is queried as a graph. The investigator runs `obsidian backlinks file=X` to see what depends on a decision. It runs `obsidian search:context query=Y path=bugs` to find prior post-mortems with matching lines. The kit's long-term memory is queryable, not just searchable.
 
@@ -94,15 +94,15 @@ sequenceDiagram
     You->>Orchestrator: /orchestrator fix shutdown crash
     Orchestrator->>Vault: search:context bugs/ for prior post-mortems
     Vault-->>Orchestrator: 2 prior reports, both partial fixes
-    Orchestrator->>Investigator: L1 — find proximate cause site
+    Orchestrator->>Investigator: Operator — find proximate cause site
     Investigator-->>Orchestrator: file:line + ownership chain
-    Orchestrator->>Safety: L2 — audit lifecycle (cross-thread suspected)
+    Orchestrator->>Safety: Engineer — audit lifecycle (cross-thread suspected)
     Safety-->>Orchestrator: gap in destruction path
-    Orchestrator->>Implementer: L2 — apply fix
+    Orchestrator->>Implementer: Engineer — apply fix
     Implementer->>Hooks: edit triggers lint_on_edit
     Hooks-->>Implementer: clean
     Implementer-->>Orchestrator: change ready
-    Orchestrator->>Reviewer: L3 (opus, production-critical) — review
+    Orchestrator->>Reviewer: Lead (opus, production-critical) — review
     Reviewer-->>Orchestrator: signed off
     Orchestrator->>Hooks: enforce_task_tests gates commit
     Hooks->>Vault: on_commit appends to today's daily note
@@ -177,7 +177,7 @@ flowchart TB
         T[direct-tools-first · per-agent budget caps<br/>tests run once at end of multi-agent run]
     end
     subgraph L2["Layer 2 — Multi-agent"]
-        M[tier system L1/L2/L3 with mandatory justification<br/>Reasoning Budget Used feedback loop<br/>adversarial reviewer in parallel with safety + pragmatist]
+        M[tier system Operator/Engineer/Lead with mandatory justification<br/>Reasoning Budget Used feedback loop<br/>adversarial reviewer in parallel with safety + pragmatist]
     end
     subgraph L1["Layer 1 — Skill"]
         S[persistent memory check · mentor Iron Rules<br/>structured handoff protocol<br/>forked-context for expensive skills]
@@ -200,7 +200,7 @@ Two paths. Pick one.
 ```bash
 git clone https://github.com/gamingfedor-dev/team-lead-harness.git ~/harness
 cd /path/to/your/project
-~/harness/setup_ai_workspace.sh \
+~/harness/setup_harness.sh \
   --project-dir . \
   --vault-dir ../MyProjectVault \
   --ide claude
@@ -236,7 +236,7 @@ Paste [`WIZARD.md`](WIZARD.md) into the session. One question at a time. Every s
 | `/weekly` | Aggregates 7 dailies into a weekly rollup | haiku | ISO week numbering. Parses session tables. |
 | `/domain-skill` | Template for a project-specific expert | — | Fill once per domain (UAV, payments, design system, etc.). |
 
-Keep the names or rename them. I use anime and film character handles in my own deployment: `/o7`, `/devil`, `/hanji`, `/loid`, `/pylyp`, `/otto`. The pattern is documented in [`kit/02-skill-catalog.md` § Persona Identity](kit/02-skill-catalog.md). Generic names work fine.
+Keep the names or rename them. I use anime and film character handles in my own deployment: `/o7` (implementer), `/devil` (reviewer), `/hanji` (investigator), `/loid` (mentor), `/pylyp` (pragmatist), `/otto` (orchestrator), `/gojo` (safety), `/rock` (performance), `/bob` (crash). The pattern is documented in [`kit/02-skill-catalog.md` § Persona Identity](kit/02-skill-catalog.md). Generic names work fine.
 
 ---
 
@@ -290,7 +290,7 @@ Partially. The vault, templates, and persona prompts port. The hooks and `.claud
 team-lead-harness/
 ├── README.md              ← you are here
 ├── WIZARD.md              ← paste into Claude Code for interactive setup
-├── setup_ai_workspace.sh  ← auto-detect script (alternative to wizard)
+├── setup_harness.sh       ← auto-detect script (alternative to wizard)
 ├── kit/                   ← reference docs, read once for context
 │   ├── 00-MASTER-GUIDE.md
 │   ├── 01-claude-md-template.md

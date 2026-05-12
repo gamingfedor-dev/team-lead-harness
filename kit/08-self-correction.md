@@ -88,17 +88,17 @@ Investigator, implementer, reviewer, safety, performance use `context: fork` + `
 
 The orchestrator is built around the assumption that any single agent can be wrong.
 
-### 2.1 Tier system (L1 / L2 / L3) with mandatory per-agent justification
+### 2.1 Tier system (Operator / Engineer / Lead) with mandatory per-agent justification
 
-Before spawning, the orchestrator writes for each agent:
-- **Tier** (L1 retrieval / L2 analytical / L3 judgment)
+The harness ladders three named reasoning tiers — **Operator**, **Engineer**, **Lead** — each a purposeful role with its own scaffolding (not a numeric label). Before spawning, the orchestrator writes for each agent:
+- **Tier** (Operator retrieval / Engineer analytical / Lead judgment)
 - **Why** (one-line justification)
 - **↓ Downgrade trigger** (condition that drops the tier)
 - **↑ Upgrade trigger** (condition that raises the tier)
 
-Default is **L1**. Every promotion must be defended in writing. (See [`02-skill-catalog.md` § Orchestrator](02-skill-catalog.md) + [orchestrator template](../templates/personas/orchestrator.md).)
+Default is **Operator**. Every promotion must be defended in writing. (See [`02-skill-catalog.md` § Orchestrator](02-skill-catalog.md) + [orchestrator template](../templates/personas/orchestrator.md).)
 
-**What this corrects:** Tier inflation — the natural drift toward "everything is L3 because L3 sounds careful." Unjustified L3 wastes tokens; unnoticed L1-when-L2-is-needed produces shallow analyses.
+**What this corrects:** Tier inflation — the natural drift toward "everything is Lead because Lead sounds careful." Unjustified Lead wastes tokens; unnoticed Operator-when-Engineer-is-needed produces shallow analyses.
 
 ### 2.2 Reasoning Budget Used (mandatory synthesis section)
 
@@ -108,11 +108,11 @@ Every orchestration ends with a **Reasoning Budget Used** report:
 - Unjustified promotions (list, or "none")
 - Production-critical opus exception used (yes/no + path)
 
-**What this corrects:** Without this feedback loop, Phase 1.5 silently decays into "L2 default, L3 whenever in doubt." With it, you see your own drift week-over-week and can adjust.
+**What this corrects:** Without this feedback loop, Phase 1.5 silently decays into "Engineer default, Lead whenever in doubt." With it, you see your own drift week-over-week and can adjust.
 
 ### 2.3 Mid-flight promotion rule
 
-If an L1 agent's output reveals complexity beyond its rubric (contradictory prior analyses, cross-thread deletion uncovered, etc.), the *next* agent may be promoted one tier *without* pre-justification — but the promotion gets logged in the synthesis with the trigger that caused it.
+If an Operator agent's output reveals complexity beyond its rubric (contradictory prior analyses, cross-thread deletion uncovered, etc.), the *next* agent may be promoted one tier (Operator → Engineer, Engineer → Lead) *without* pre-justification — but the promotion gets logged in the synthesis with the trigger that caused it.
 
 **What this corrects:** Rigid planning when evidence in flight should change the plan. Also corrects against the opposite — uncritical sticking to a plan after it has obviously gone sideways.
 
@@ -250,10 +250,10 @@ Worked example: *"Fix the intermittent crash on shutdown that we saw last week."
 
 1. **Layer 5 (vault).** Investigator checks `obsidian search:context query="shutdown crash" path="bugs"` — finds two prior post-mortems with matching symptoms but different fixes.
 2. **Layer 1 (skill).** Investigator's persistent-memory check surfaces a relevant pattern note. Reports findings with structured handoff to safety auditor.
-3. **Layer 2 (multi-agent).** Orchestrator's Phase 1.5 assigns: investigator L1 → safety L2 (cross-thread potentially involved) → implementer L2 → reviewer L3 (this is a production-critical path — opus exception applies).
+3. **Layer 2 (multi-agent).** Orchestrator's Phase 1.5 assigns: investigator Operator → safety Engineer (cross-thread potentially involved) → implementer Engineer → reviewer Lead (this is a production-critical path — opus exception applies).
 4. **Layer 3 (tokens).** Each agent gets a 1-2 sentence prompt with the gathered file:line refs in the prompt, not as a "go re-read it yourself" instruction.
 5. **Layer 1 (skill).** Safety auditor maps the ownership chain. Hands off to implementer with the gap identified.
-6. **Layer 1 (skill).** Implementer ships the fix. Hands off back to safety for verification (L1 mode).
+6. **Layer 1 (skill).** Implementer ships the fix. Hands off back to safety for verification (Operator mode).
 7. **Layer 4 (hooks).** `lint_on_edit.sh` runs after each file edit. `track_modified.sh` accumulates the file list. The reviewer runs in parallel and signs off. `enforce_task_tests.sh` blocks completion until the relevant unit tests have been run. `lint_precommit.sh` runs on staged files.
 8. **Layer 4 (hooks).** `on_commit.sh` appends the commit entry + file list to today's daily note.
 9. **Layer 2 (multi-agent).** Orchestrator's Phase 4 synthesis includes the **Reasoning Budget Used** — captures that the reviewer was promoted to opus under the production-critical exception, with the path justification.

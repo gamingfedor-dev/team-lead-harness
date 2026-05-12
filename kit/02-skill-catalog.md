@@ -745,21 +745,21 @@ Analyze this with a pragmatic lens: $ARGUMENTS
 
 #### Phase 1.5: Tier System
 
-Otto assigns a reasoning tier to every agent before spawning. Tier controls prompt scaffolding, not model selection.
+Otto assigns a reasoning tier to every agent before spawning. The harness ladders three tiers — **Operator**, **Engineer**, **Lead** — each a named role with its own scaffolding. Tier controls prompt scaffolding, not model selection.
 
 | Tier | Scaffolding | When |
 |------|------------|------|
-| L1 | "Report what you find. Stick to evidence." | Data lookup, file gathering, grep-and-report |
-| L2 | "Think carefully. Synthesize across sources." | Cross-file analysis, code review, risk assessment |
-| L3 | "High-stakes decision. Reason step by step." | Architectural decisions, adversarial review of critical paths |
+| **Operator** | "Report what you find. Stick to evidence." | Data lookup, file gathering, grep-and-report |
+| **Engineer** | "Think carefully. Synthesize across sources." | Cross-file analysis, code review, risk assessment |
+| **Lead** | "High-stakes decision. Reason step by step." | Architectural decisions, adversarial review of critical paths |
 
 **Per-agent format Otto must write before spawning:**
-- **Tier:** L1 / L2 / L3
+- **Tier:** Operator / Engineer / Lead
 - **Why:** one-line justification
 - **↓ Downgrade trigger:** condition that drops the tier
 - **↑ Upgrade trigger:** condition that raises the tier
 
-Default to L1. Every promotion above L1 must be justified in writing.
+Default to Operator. Every promotion above Operator must be justified in writing.
 
 #### Command Template (`.claude/commands/{{ORCHESTRATOR_NAME}}.md`)
 
@@ -807,9 +807,9 @@ For every agent in the proposed team, classify the reasoning tier, justify it, a
 
 | Tier | Scaffolding | When |
 |------|------------|------|
-| L1 | "Report what you find. Stick to evidence." | Retrieval, grep-and-report |
-| L2 | "Think carefully. Synthesize across sources." | Cross-file synthesis, review |
-| L3 | "High-stakes decision. Reason step by step." | Ambiguous trade-offs, production-critical review |
+| **Operator** | "Report what you find. Stick to evidence." | Retrieval, grep-and-report |
+| **Engineer** | "Think carefully. Synthesize across sources." | Cross-file synthesis, review |
+| **Lead** | "High-stakes decision. Reason step by step." | Ambiguous trade-offs, production-critical review |
 
 Model assignments are fixed (haiku for most, sonnet for implementer). The ONE exception: production-critical adversarial review may use Opus when a missed bug causes a production incident.
 
@@ -840,10 +840,10 @@ Design → [User Approval] → Implementer → [User Approval] → Reviewer
 
 | Task Type | Team | Execution |
 |-----------|------|-----------|
-| New Feature | Investigator(L1) → Design(L2) → Implementer(L2-L3) → Reviewer(L2) | Sequential |
-| Bug Fix | Investigator(L1) → Implementer(L2) → Safety(L2 if memory) → Reviewer(L2) | Sequential |
-| Performance | Investigator(L1) ∥ Performance(L2) → Reviewer(L2) → Implementer(L2) | Parallel then sequential |
-| Code Review | Reviewer(L2-L3) ∥ Safety(L2) ∥ Pragmatist(L2) | Parallel |
+| New Feature | Investigator(Operator) → Design(Engineer) → Implementer(Engineer–Lead) → Reviewer(Engineer) | Sequential |
+| Bug Fix | Investigator(Operator) → Implementer(Engineer) → Safety(Engineer if memory) → Reviewer(Engineer) | Sequential |
+| Performance | Investigator(Operator) ∥ Performance(Engineer) → Reviewer(Engineer) → Implementer(Engineer) | Parallel then sequential |
+| Code Review | Reviewer(Engineer–Lead) ∥ Safety(Engineer) ∥ Pragmatist(Engineer) | Parallel |
 
 ---
 

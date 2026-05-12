@@ -88,7 +88,7 @@ When user requests work without specifying an agent, select the appropriate agen
 
 ### Tier Assignment (for Orchestrator)
 
-The orchestrator assigns reasoning tiers (L1/L2/L3) to subagents — not to change models, but to inject cognitive scaffolding. Default to L1 (retrieval). Promote only with written justification. Production-critical adversarial review is the one deliberate exception where Opus may be used.
+The orchestrator assigns one of three reasoning tiers — **Operator**, **Engineer**, **Lead** — to every subagent. The tier injects cognitive scaffolding into the prompt; it does not change the model. Default to Operator (retrieval). Promote only with written justification. Production-critical adversarial review is the one deliberate exception where Opus may be used.
 
 ### When to Use Skill vs Command vs Agent
 

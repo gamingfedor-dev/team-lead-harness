@@ -142,15 +142,15 @@ Hooks are registered on MCP tool matchers (`mcp__git__git_commit`). If you use `
 
 ### Orchestrator Tier System (Phase 1.5)
 
-The orchestrator skill assigns reasoning tiers to each spawned agent — not to change models, but to inject appropriate cognitive scaffolding into prompts:
+The orchestrator skill assigns reasoning tiers to each spawned agent — not to change models, but to inject appropriate cognitive scaffolding into prompts. The harness ladders three tiers — **Operator**, **Engineer**, **Lead**:
 
 | Tier | Scaffolding injected | When |
 |------|---------------------|------|
-| L1 | "Report what you find. Stick to evidence." | Data lookup, file gathering, grep-and-report |
-| L2 | "Think carefully. Synthesize across sources." | Cross-file analysis, code review, risk assessment |
-| L3 | "High-stakes decision. Reason step by step." | Architectural decisions with ambiguous trade-offs |
+| **Operator** | "Report what you find. Stick to evidence." | Data lookup, file gathering, grep-and-report |
+| **Engineer** | "Think carefully. Synthesize across sources." | Cross-file analysis, code review, risk assessment |
+| **Lead** | "High-stakes decision. Reason step by step." | Architectural decisions with ambiguous trade-offs |
 
-Default to L1. Every promotion must be defended in writing. See [02-skill-catalog.md](02-skill-catalog.md) for the full orchestrator template.
+Default to Operator. Every promotion must be defended in writing. See [02-skill-catalog.md](02-skill-catalog.md) for the full orchestrator template.
 
 ---
 

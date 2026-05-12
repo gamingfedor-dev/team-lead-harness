@@ -1,8 +1,8 @@
 #!/bin/bash
 # ============================================================================
-# AI Workspace Bootstrap - Self-Detecting Setup
+# Team Lead Harness Bootstrap - Self-Detecting Setup
 # ============================================================================
-# Detects your project's tech stack and sets up:
+# Detects your project's tech stack and sets up the harness:
 # - Obsidian vault with templates adapted to your stack
 # - Claude Code config (CLAUDE.md + .claude/commands/ personas)
 # - Cursor config (.cursorrules)
@@ -10,12 +10,12 @@
 # - doc_watcher.sh for automated documentation
 #
 # Usage:
-#   ./setup_ai_workspace.sh                    # Auto-detect everything
-#   ./setup_ai_workspace.sh --project-dir /path/to/project
-#   ./setup_ai_workspace.sh --vault-dir /path/to/vault
-#   ./setup_ai_workspace.sh --ide claude       # Claude Code only
-#   ./setup_ai_workspace.sh --ide cursor       # Cursor only
-#   ./setup_ai_workspace.sh --ide both         # Both (default)
+#   ./setup_harness.sh                    # Auto-detect everything
+#   ./setup_harness.sh --project-dir /path/to/project
+#   ./setup_harness.sh --vault-dir /path/to/vault
+#   ./setup_harness.sh --ide claude       # Claude Code only
+#   ./setup_harness.sh --ide cursor       # Cursor only
+#   ./setup_harness.sh --ide both         # Both (default)
 #
 # Requirements:
 #   - Node.js 18+ (for MCP servers)
@@ -1944,12 +1944,12 @@ print_summary() {
     echo "  5. Review and customize CLAUDE.md for your project specifics"
     echo "  6. Review .cursorrules for any project-specific additions"
     echo ""
-    echo -e "${GREEN}Done! Your AI workspace is ready.${NC}"
+    echo -e "${GREEN}Done! Your Team Lead Harness is ready.${NC}"
 }
 
 # ── Main ────────────────────────────────────────────────────────────────────
 main() {
-    header "AI Workspace Bootstrap"
+    header "Team Lead Harness Bootstrap"
     echo "Project: $PROJECT_DIR"
     echo "IDE:     $IDE_TARGET"
     echo ""

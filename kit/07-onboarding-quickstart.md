@@ -178,7 +178,7 @@ Claude Code is a power tool. It works best when you are specific about what you 
 | **Session context banner** | A text block injected at session start by the `session_context.sh` hook, showing current branch, active plans, and recent daily notes. |
 | **Routing table** | A table in CLAUDE.md mapping request patterns to skills. E.g., "fix bug" → `/implementer`. |
 | **Otto** | The orchestrator skill. Spawns a multi-agent team for complex multi-domain tasks. |
-| **Tier (L1/L2/L3)** | Reasoning tier assigned by Otto to each agent. Controls the cognitive scaffolding in the agent's prompt — not the model. L1=retrieval, L2=analysis, L3=judgment. |
+| **Tier (Operator / Engineer / Lead)** | Reasoning tier assigned by Otto to each agent. Controls the cognitive scaffolding in the agent's prompt — not the model. Operator=retrieval, Engineer=analysis, Lead=judgment. |
 | **`--use-opus`** | Flag you can pass to any skill to force all Task subagents to use the Opus model. Expensive — use sparingly. |
 | **`mcp__git__git_commit`** | The MCP git commit tool. Always use this instead of `bash git commit` so the `on_commit.sh` hook fires and logs to the daily note. |
 | **`additionalDirectories`** | A `settings.local.json` field that grants Claude Code access to directories outside the project root (e.g., the vault at `../VaultName`). |
