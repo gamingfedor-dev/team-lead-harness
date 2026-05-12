@@ -2,7 +2,7 @@
 
 A Claude Code workspace for one person running a virtual engineering team.
 
-I built this over four months. Three production codebases: React, Angular, and a C++/Qt UAV ground control app. Five colleagues picked it up after seeing it work. This repo is the sanitized version.
+I built this over four months. Three production codebases: React, Angular, and a C++/Qt UAV ground control app. This repo is the sanitized version.
 
 <p align="center">
   <img src="demo.gif" alt="Investigator persona running in a fresh Claude Code session — auditing the kit's own setup in a test deployment and writing a structured analysis to the vault" width="900">
