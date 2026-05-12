@@ -1,4 +1,4 @@
-# Team Lead Harness (Orchestration Sandbox)
+# Team Lead Harness (Agent Orchestration Layer)
 
 A Claude Code workspace for one person running a virtual engineering team.
 
